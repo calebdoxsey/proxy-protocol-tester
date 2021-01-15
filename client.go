@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 
 	"github.com/pires/go-proxyproto"
 	"go.uber.org/zap"
@@ -19,7 +20,16 @@ func runClient(version byte, dst *url.URL) {
 		log.Fatal("error resolving src", zap.Error(err))
 	}
 
-	dstAddr, err := net.ResolveTCPAddr("tcp", dst.Host)
+	host := dst.Host
+	if !strings.Contains(host, ":") {
+		if dst.Scheme == "https" {
+			host += ":443"
+		} else {
+			host += ":80"
+		}
+	}
+
+	dstAddr, err := net.ResolveTCPAddr("tcp", host)
 	if err != nil {
 		log.Fatal("error resolving dst", zap.Error(err))
 	}
